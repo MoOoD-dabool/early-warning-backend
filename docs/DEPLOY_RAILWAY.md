@@ -51,6 +51,7 @@
 افتح **خدمة التطبيق** (وليس MySQL) ثم تبويب **Variables**. الأسهل: زر **Raw Editor** والصق الكتلة التالية بعد استبدال كل `<...>`:
 
 ```
+PORT=8080
 APP_NAME=EarlyWarning
 APP_ENV=production
 APP_DEBUG=false
@@ -107,8 +108,9 @@ ADMIN_PASSWORD=<12 حرفاً على الأقل>
 
 ## 5. الدومين ومسار الفحص
 
-1. **Settings** ثم **Networking** ثم **Generate Domain** (يعطيك عنواناً مثل `xxxx.up.railway.app`، وفيه HTTPS جاهز).
-2. ارجع إلى المتغيرات وضع: `APP_URL=https://xxxx.up.railway.app`
+1. **Settings** ثم **Networking**. غالباً أنشأ Railway دومين تلقائياً؛ وإلا اضغط **Generate Domain** (يعطيك عنواناً مثل `xxxx.up.railway.app`، وفيه HTTPS جاهز).
+2. **منفذ الدومين (مهم):** يجب أن يكون **8080**، وهو المنفذ الذي يستمع عليه nginx داخل الحاوية (المتغير `PORT=8080`). إن كان منفذ الدومين مختلفاً ظهر الخطأ `502 Application failed to respond` رغم أن السجلات تقول إن كل شيء يعمل. عدّله من سطر الدومين نفسه.
+3. ارجع إلى المتغيرات وضع: `APP_URL=https://xxxx.up.railway.app`
 3. **Settings** ثم **Deploy** ثم **Healthcheck Path** = `/up`
 4. اضغط **Deploy** (أو Railway سيعيد النشر تلقائياً عند تغيير المتغيرات).
 
