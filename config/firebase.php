@@ -11,8 +11,17 @@ return [
 
     /*
     | Path to the service account JSON key, relative to storage/app.
+    | Used on a developer machine, where the file sits in storage/app.
     */
     'credentials_path' => env('FIREBASE_CREDENTIALS_PATH', 'firebase-service-account.json'),
+
+    /*
+    | The same service account key, but as the file's CONTENT in an environment
+    | variable (either the raw JSON, or that JSON base64-encoded). For servers
+    | such as Railway, where the file can't be copied in (it is deliberately
+    | never committed to Git). When set, it takes priority over the file above.
+    */
+    'service_account_json' => env('FIREBASE_SERVICE_ACCOUNT_JSON'),
 
     /*
     | Must match the Android notification channel id created natively in

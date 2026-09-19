@@ -157,31 +157,58 @@ class FcmService
      */
     private function loadCredentials(): ?array
     {
-        $path = config('firebase.credentials_path');
+        $envJson = config('firebase.service_account_json');
 
-        // Reads straight from storage/app (not via Storage::disk('local'),
-        // whose configured root is storage/app/private as of this Laravel
-        // version's default filesystems config) - this is where the real
-        // service account file has actually always lived.
-        $fullPath = storage_path("app/{$path}");
+        if (filled($envJson)) {
+            // On a server (e.g. Railway) the key comes from an environment
+            // variable, since the file is never committed to Git. It can be
+            // the JSON itself, or that JSON base64-encoded (handy when a
+            // platform mangles quotes/newlines in pasted values).
+            $raw = trim((string) $envJson);
 
-        if (! File::exists($fullPath)) {
-            Log::error("FCM: service account file not found at {$fullPath}.");
+            if (! str_starts_with($raw, '{')) {
+                $decoded = base64_decode($raw, true);
+                $raw = $decoded === false ? '' : $decoded;
+            }
+
+            $json = json_decode($raw, true);
+            $source = 'the FIREBASE_SERVICE_ACCOUNT_JSON environment variable';
+        } else {
+            $path = config('firebase.credentials_path');
+
+            // Reads straight from storage/app (not via Storage::disk('local'),
+            // whose configured root is storage/app/private as of this Laravel
+            // version's default filesystems config) - this is where the real
+            // service account file has actually always lived.
+            $fullPath = storage_path("app/{$path}");
+
+            if (! File::exists($fullPath)) {
+                Log::error("FCM: service account file not found at {$fullPath}.");
+
+                return null;
+            }
+
+            $json = json_decode(File::get($fullPath), true);
+            $source = 'the service account file';
+        }
+
+        if (! isset($json['client_email'], $json['private_key'])) {
+            Log::error("FCM: {$source} is missing client_email or private_key (or is not valid JSON).");
 
             return null;
         }
 
-        $json = json_decode(File::get($fullPath), true);
+        $privateKey = $json['private_key'];
 
-        if (! isset($json['client_email'], $json['private_key'])) {
-            Log::error('FCM: service account file is missing client_email or private_key.');
-
-            return null;
+        // Some hosts store the key with a literal backslash-n instead of a
+        // real line break, which makes the PEM unreadable; turn it back.
+        if (! str_contains($privateKey, "\n")) {
+            $privateKey = str_replace('\n', "\n", $privateKey);
         }
 
         return [
             'client_email' => $json['client_email'],
-            'private_key' => $json['private_key'],
+            'private_key' => $privateKey,
         ];
     }
 }

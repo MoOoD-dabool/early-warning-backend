@@ -1,0 +1,44 @@
+# Things that must never be copied into the image (secrets, local data,
+# and files that are rebuilt inside the image anyway).
+
+.git
+.gitignore
+.gitattributes
+.claude
+CLAUDE.md
+
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+storage/app/firebase-service-account.json
+
+# Local data
+database/*.sqlite*
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/public/*
+storage/app/private/*
+public/storage
+
+# Rebuilt inside the image
+vendor
+node_modules
+public/hot
+public/build
+public/js/filament
+public/css/filament
+public/fonts/filament
+
+# Laravel's cached package/service manifests from a developer machine list
+# dev-only packages (Pail, Sail...) that don't exist in the production image.
+bootstrap/cache/*.php
+
+# Not needed at runtime
+tests
+docs
+*.md
+Dockerfile
+.dockerignore

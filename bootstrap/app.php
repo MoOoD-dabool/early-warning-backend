@@ -17,6 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // On a real host (e.g. Railway) every request arrives through the
+        // host's HTTPS reverse proxy. Trusting its X-Forwarded-* headers lets
+        // Laravel see the visitor's real IP (the login/OTP rate limits are
+        // per IP — without this, all users would share ONE limit bucket) and
+        // know the original request was https (correct admin-panel URLs).
+        // Safe here because the container is only reachable through that proxy.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'admin' => EnsureAdmin::class,
         ]);

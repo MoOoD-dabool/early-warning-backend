@@ -1,0 +1,31 @@
+# nginx site for the Laravel app. ${PORT} is filled in by start.sh
+# (envsubst only replaces ${PORT}; every other $variable is nginx's own).
+
+server {
+    listen ${PORT};
+    server_name _;
+
+    root /var/www/html/public;
+    index index.php;
+
+    # A bit above the app's own 4 MB profile-picture limit.
+    client_max_body_size 8M;
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+        fastcgi_read_timeout 60;
+    }
+
+    # Never serve hidden files (.env, .git ...), except /.well-known.
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
