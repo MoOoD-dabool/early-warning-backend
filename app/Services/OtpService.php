@@ -26,13 +26,22 @@ class OtpService
             'otp_expires_at' => Carbon::now()->addMinutes(self::OTP_TTL_MINUTES),
         ])->save();
 
-        try {
-            Mail::to($user->email)->send(new OtpCodeMail($otp));
-        } catch (\Throwable $e) {
-            // Don't let a mail failure break registration/login — log it and
-            // keep going. The code itself must never be written to the logs.
-            Log::error("Failed to send OTP email to {$user->email}: ".$e->getMessage());
-        }
+        // Sent after the HTTP response has already gone back to the app
+        // (defer() runs it immediately when not serving a web request), so a
+        // slow or unreachable mail service can never make registration / OTP
+        // resend hang until the app's own timeout — which used to produce a
+        // false "could not reach the server" while the account was created.
+        // A mail failure doesn't break the flow (the user can request a new
+        // code); it is logged. The code itself must never be written to logs.
+        $email = $user->email;
+
+        defer(function () use ($email, $otp): void {
+            try {
+                Mail::to($email)->send(new OtpCodeMail($otp));
+            } catch (\Throwable $e) {
+                Log::error("Failed to send OTP email to {$email}: ".$e->getMessage());
+            }
+        });
 
         return $otp;
     }

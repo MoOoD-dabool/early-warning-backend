@@ -42,12 +42,19 @@ class ReportController extends Controller
         $notificationEmail = config('reports.notification_email');
 
         if ($notificationEmail) {
-            try {
-                Mail::to($notificationEmail)->send(new NewReportNotificationMail($report->load('user')));
-            } catch (\Throwable $e) {
-                // Don't let a mail failure block the report submission itself.
-                Log::error('Failed to send new-report notification email: '.$e->getMessage());
-            }
+            $report->load('user');
+
+            // After the response has been sent (immediately in console): a slow
+            // or unreachable mail service must not delay the submission, or
+            // the app times out and the user re-sends the same report.
+            defer(function () use ($notificationEmail, $report): void {
+                try {
+                    Mail::to($notificationEmail)->send(new NewReportNotificationMail($report));
+                } catch (\Throwable $e) {
+                    // Don't let a mail failure block the report submission itself.
+                    Log::error('Failed to send new-report notification email: '.$e->getMessage());
+                }
+            });
         }
 
         return response()->json([

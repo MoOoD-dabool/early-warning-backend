@@ -74,12 +74,9 @@ QUEUE_CONNECTION=sync
 LOG_CHANNEL=stderr
 LOG_LEVEL=info
 
-MAIL_MAILER=smtp
-MAIL_HOST=<من .env>
-MAIL_PORT=<من .env>
-MAIL_SCHEME=<من .env>
-MAIL_USERNAME=<من .env>
-MAIL_PASSWORD=<من .env>
+MAIL_MAILER=appsscript
+APPSSCRIPT_MAIL_URL=<رابط Web App من القسم 3-ب>
+APPSSCRIPT_MAIL_TOKEN=<الرمز السري من القسم 3-ب>
 MAIL_FROM_ADDRESS=<من .env>
 MAIL_FROM_NAME=<من .env>
 REPORTS_NOTIFICATION_EMAIL=<من .env>
@@ -93,6 +90,25 @@ ADMIN_EMAIL=<بريدك الذي ستدخل به لوحة الأدمن>
 ADMIN_NAME=<اسمك>
 ADMIN_PASSWORD=<12 حرفاً على الأقل>
 ```
+
+### 3-ب. البريد الإلكتروني على Railway (مهم: SMTP محجوب هناك)
+
+Railway **يعطّل SMTP** (المنافذ 25 و465 و587) في الخطط Free وTrial وHobby (يعمل فقط في Pro). لذلك **لا يصلح** `MAIL_MAILER=smtp` ولا كلمة مرور تطبيق Gmail على Railway: كل رسالة تعلّق الطلب دقيقة كاملة ثم يفشل التطبيق بـ"Could not reach the server" (والحساب أو البلاغ قد يُحفظ ثم يتكرر عند إعادة المحاولة).
+
+الحل المستخدم هنا: **وسيط Google Apps Script** (مجاني، بلا دومين). سيرفرنا يرسل طلب HTTPS إلى نص صغير عند حساب Gmail الخاص بالمشروع، والنص يرسل الرسالة من هذا الحساب. الحد التقريبي **100 رسالة يومياً** لحساب Gmail عادي.
+
+1. ادخل `script.google.com` بحساب Gmail الذي تريد أن تخرج منه الرسائل، ثم **New project**.
+2. امسح الكود الافتراضي والصق كود النص (محتوى ملف `early-warning-mail-script.gs.txt`) واحفظ. **يحتوي الملف رمزاً سرياً**، فلا يُرفع إلى GitHub ولا يُرسل لأحد.
+3. **Deploy** ثم **New deployment** ثم النوع **Web app**، واضبط: *Execute as* = **Me**، *Who has access* = **Anyone**. ثم **Deploy**.
+4. عند طلب الصلاحية: **Authorize access** ثم اختر حسابك ثم (تحذير Google "غير موثَّق" طبيعي لأنه نصك الخاص) **Advanced** ثم **Go to ... (unsafe)** ثم **Allow**.
+5. انسخ **Web app URL** (ينتهي بـ`/exec`). افتحه في المتصفح: يجب أن ترى `{"ok":true,"service":"early-warning-mailer"}` (لا يرسل شيئاً).
+6. في Railway (خدمة التطبيق ثم **Variables**) ضع:
+   - `MAIL_MAILER=appsscript`
+   - `APPSSCRIPT_MAIL_URL=` رابط الخطوة 5
+   - `APPSSCRIPT_MAIL_TOKEN=` **نفس** الرمز السري الموجود في أول سطر من كود النص.
+7. النشر ثم جرّب التسجيل بحساب جديد: يجب أن يصل رمز التحقق خلال ثوانٍ.
+
+ملاحظات: الرمز السري هو الذي يمنع أي شخص يعرف رابط النص من استخدام حسابك للإرسال، فاحفظه ولا تنشره. وإن غيّرت الكود لاحقاً فاختر **Manage deployments ثم Edit ثم New version** (أو ابقَ على نفس الرابط). وإذا تخطى عدد الرسائل الحد اليومي فسيسجّل السيرفر خطأ في Logs بدل أن يعلّق التطبيق.
 
 ملاحظات:
 - `${{MySQL.MYSQLHOST}}` وأخواتها **تُكتب كما هي حرفياً**؛ Railway يستبدلها بقيم الخدمة `MySQL` تلقائياً.
@@ -161,7 +177,7 @@ ADMIN_PASSWORD=<12 حرفاً على الأقل>
 | الحاوية تعيد التشغيل باستمرار | فشل `migrate` (السجل يقول `giving up`) | اقرأ سبب الخطأ فوقه في Logs |
 | لوحة الأدمن بدون ألوان أو تنسيق | `APP_URL` ليس `https://…` الصحيح | صحّح `APP_URL` وأعد النشر |
 | `419 Page Expired` عند دخول اللوحة | الكوكيز أو الجلسة | تأكد من `SESSION_DRIVER=file` و`SESSION_SECURE_COOKIE=true` و`APP_URL` |
-| لا تصل رسائل OTP بالبريد | متغيرات `MAIL_*` | انسخها من `.env` كما هي (كلمة سر Gmail هي "كلمة مرور التطبيق") |
+| لا تصل رسائل OTP بالبريد، أو "Could not reach the server" عند التسجيل | SMTP محجوب في Railway، أو إعداد `appsscript` ناقص | استخدم `MAIL_MAILER=appsscript` (القسم 3-ب). ابحث في Logs عن `Failed to send OTP email` وسبب الرفض بعده |
 | لا تصل إشعارات الدفع | `FIREBASE_SERVICE_ACCOUNT_JSON` أو `FIREBASE_PROJECT_ID` | أعد نسخ النص من الحافظة كاملاً؛ ابحث في Logs عن `FCM:` |
 | صور الملف الشخصي تختفي بعد نشر جديد | الحجم الدائم غير مربوط | الخطوة 4 |
 | 429 بعد محاولات قليلة | حد المحاولات (5 في الدقيقة) | طبيعي؛ الانتظار دقيقة |

@@ -49,6 +49,18 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        // HTTPS-only mailer for hosts that block outbound SMTP (e.g. Railway's
+        // Trial/Hobby plans). Sends through a Google Apps Script web app owned
+        // by the project's Gmail account — see App\Mail\Transport\AppsScriptTransport.
+        'appsscript' => [
+            'transport' => 'appsscript',
+            // Deliberately NOT called "url": Laravel treats a mailer's "url"
+            // key as a connection URL and takes the transport from its scheme.
+            'endpoint' => env('APPSSCRIPT_MAIL_URL'),
+            'token' => env('APPSSCRIPT_MAIL_TOKEN'),
+            'timeout' => 12,
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],

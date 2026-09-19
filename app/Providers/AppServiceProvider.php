@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Mail\Transport\AppsScriptTransport;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -28,6 +30,16 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
+        // The "appsscript" mailer (config/mail.php): mail over HTTPS for hosts
+        // that block SMTP. Used by setting MAIL_MAILER=appsscript.
+        Mail::extend('appsscript', function (array $config) {
+            return new AppsScriptTransport(
+                (string) ($config['endpoint'] ?? ''),
+                (string) ($config['token'] ?? ''),
+                (int) ($config['timeout'] ?? 12),
+            );
+        });
 
         // Login: 5 attempts/minute per IP — blocks password brute-forcing.
         RateLimiter::for('login', function (Request $request) {
