@@ -11,7 +11,7 @@
                 <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden;">
                     <tr>
                         <td style="background-color:#27ae60; padding:20px; text-align:center;">
-                            <span style="color:#ffffff; font-size:18px; font-weight:bold;">وصلك رد على بلاغك</span>
+                            <span style="color:#ffffff; font-size:18px; font-weight:bold;">تلقيت رداً على بلاغك</span>
                         </td>
                     </tr>
                     <tr>

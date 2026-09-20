@@ -11,7 +11,7 @@
                 <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden;">
                     <tr>
                         <td style="background-color:#2c3e50; padding:20px; text-align:center;">
-                            <span style="color:#ffffff; font-size:18px; font-weight:bold;">بلاغ جديد وصل</span>
+                            <span style="color:#ffffff; font-size:18px; font-weight:bold;">وصل بلاغ جديد</span>
                         </td>
                     </tr>
                     <tr>
@@ -22,7 +22,7 @@
                                 {{ $report->message }}
                             </div>
                             <p style="font-size:13px; color:#888888; margin:20px 0 0;">
-                                افتحي لوحة الأدمن للرد على هذا البلاغ.
+                                افتح لوحة الأدمن للرد على هذا البلاغ.
                             </p>
                         </td>
                     </tr>

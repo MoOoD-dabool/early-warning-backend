@@ -52,7 +52,7 @@ return [
         ],
         7 => [
             'roman' => 'VII',
-            'label_ar' => 'أضرار في المباني وصعوبة على أن تبقى واقفة',
+            'label_ar' => 'أضرار في المباني وصعوبة في الوقوف',
             'label_en' => 'Damage to buildings, difficulty remaining standing',
         ],
         8 => [
@@ -62,7 +62,7 @@ return [
         ],
         9 => [
             'roman' => 'IX',
-            'label_ar' => 'انهيارات مستمرة في المباني، ووقوع الناس على الأرض',
+            'label_ar' => 'انهيارات مستمرة في المباني، وسقوط الناس أرضاً',
             'label_en' => 'Continuous building collapses, people falling to the ground',
         ],
         10 => [
