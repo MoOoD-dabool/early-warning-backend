@@ -59,8 +59,11 @@ return [
     | they naturally see stronger routine sea-breeze wind, so the same
     | inland wind threshold would over-alert, and (b) the pressure threshold
     | below is calibrated to the real historical range of Mediterranean
-    | storms ("Medicanes": 978.6–995 hPa central pressure on record) rather
-    | than an arbitrary number.
+    | storms ("Medicanes": roughly 978–999 hPa central pressure on record;
+    | 995 covers most of them, the weakest documented ones, e.g. Numa at 998
+    | and Apollo at 999, sit just above it — accepted on purpose, since wind
+    | and rain must also be met and a false alarm costs more than missing a
+    | weak storm) rather than an arbitrary number.
     |
     | Wind thresholds are anchored to the official Beaufort scale (7=near
     | gale 50-61km/h, 8=gale 62-74, 9=severe gale 75-88, 10=storm 89-102);
@@ -80,7 +83,7 @@ return [
             'city_codes' => ['SY009', 'SY010'], // Tartus, Latakia
             'wind_speed_threshold_kmh' => 65, // solidly gale-force, Beaufort 8
             'wind_speed_critical_kmh' => 90, // storm force, Beaufort 10
-            'low_pressure_threshold_hpa' => 995, // covers the full real Medicane range (978.6-995 hPa)
+            'low_pressure_threshold_hpa' => 995, // covers most documented Medicanes (978-999 hPa); the weakest few (998-999) are intentionally left out
         ],
     ],
 

@@ -1,59 +1,288 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# نظام الإنذار المبكر للكوارث في سوريا
+# Early Warning System for Disasters in Syria
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[🇸🇾 العربية](#-العربية) · [🇬🇧 English](#-english)
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🇸🇾 العربية
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+نظام إنذار مبكر يرصد **الزلازل والسيول والفيضانات والعواصف** في سوريا، ويحدد **المحافظات المتأثرة**، ثم يرسل تنبيهاً فورياً إلى سكانها على هواتفهم، مع **صفارة إنذار** عند الخطر المرتفع وإرشادات سلامة بالعربية والإنجليزية.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+هذا المستودع هو **الخادم (Backend)** ولوحة الإدارة. تطبيق الهاتف (Flutter) في مشروع منفصل.
 
-## Learning Laravel
+### كيف يعمل؟
+1. يستقبل الخادم الزلازل لحظة تسجيلها من **EMSC** (اتصال WebSocket دائم)، ويجلب الطقس وتدفق الأنهار كل ساعة من **Open-Meteo**.
+2. يطبّق قواعد جغرافية وعلمية مبسطة ليحدد المحافظات المتأثرة وشدة الخطر في كل منها.
+3. ينشئ تنبيهاً لكل محافظة ويرسله إلى مستخدميها عبر **Firebase Cloud Messaging**.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### أهم المزايا
+- تنبيهات فورية تعمل حتى والتطبيق مغلق، مع صفارة إنذار عند الشدة العالية
+- إرشادات السلامة قبل الكارثة وأثنائها وبعدها (عربي / إنجليزي)
+- «هل شعرت بشيء؟»، والبلاغات، وطلبات الإغاثة
+- تسجيل بالبريد مع رمز تحقق، أو بحساب Google
+- لوحة إدارة (Filament) بدورين: مشرف ومشرف أعلى، مع تحقق ثنائي (2FA) وسجل نشاط
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### التقنيات
+PHP 8.2 · Laravel 12 · Sanctum · Filament · MySQL (SQLite للتطوير) · Firebase Cloud Messaging · Docker · Railway
 
-## Laravel Sponsors
+### التشغيل محلياً
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
+php artisan earthquake:listen   # نافذة منفصلة: استقبال الزلازل
+php artisan schedule:work       # نافذة منفصلة: جلب الطقس كل ساعة
+```
+المتطلبات: PHP 8.2 مع إضافة `intl`. الإشعارات تحتاج ملف حساب خدمة Firebase (لا يُرفع إلى المستودع). راجع `.env.example`.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### النشر
+الخادم يعمل على **Railway** داخل حاوية Docker. الشرح الكامل في [docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md).
 
-### Premium Partners
+### التفاصيل
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+<details>
+<summary><b>ميزات التطبيق (Flutter)</b></summary>
 
-## Contributing
+- صفحة رئيسية: آخر زلزال، طقس المحافظات، أرقام أحداث اليوم بتوقيت دمشق، ولافتة «التحذير الفعال»
+- قائمة تنبيهات مع تصفية حسب نوع الخطر، وسجل الزلازل السابقة
+- إرشادات السلامة (قبل/أثناء/بعد) لكل نوع خطر
+- «هل شعرت بشيء؟» بمقياس ميركالي (II–XII)، والبلاغات، وطلب الإغاثة
+- العمل **بدون اتصال**: يحفظ الإرشادات والطقس والتنبيهات ويعرضها عند انقطاع الإنترنت
+- عربي/إنجليزي، ووضع ليلي/نهاري، ومفتاحا الإشعارات والصوت (يُطبَّقان على الخادم)
+</details>
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+<details>
+<summary><b>قواعد إصدار التنبيه</b></summary>
 
-## Code of Conduct
+**الزلازل:** يُقدَّر نصف قطر التأثير من القوة، ثم تُنبَّه كل محافظة داخله بشدة تقلّ بالبعد عن المركز (قانون هافرساين):
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| القوة | نصف القطر |
+|---|---|
+| 2.0 – 3.0 | 30 كم |
+| 3.0 – 4.0 | 60 كم |
+| 4.0 – 5.0 | 120 كم |
+| 5.0 – 6.0 | 220 كم |
+| 6.0 – 7.0 | 350 كم |
+| 7.0 فأكثر | 500 كم |
 
-## Security Vulnerabilities
+الصفارة تعمل عند قوة ≥ 3.0 **وشدة high/critical معاً**، أي عملياً من قوة ≈ 5.5 عند أقرب محافظة.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**التسونامي:** مركز في البحر المقابل للساحل + قوة ≥ 6.0 + عمق ≤ 100 كم ← تنبيه لطرطوس واللاذقية بصفارة.
 
-## License
+**العواصف** (يلزم تحقق الشروط الثلاثة معاً): رياح + ضغط منخفض + مطر ≥ 1 mm/h.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| | داخلية `severe_storm` | ساحلية `coastal_storm` |
+|---|---|---|
+| الرياح | ≥ 60 كم/س (حرج ≥ 80) | ≥ 65 كم/س (حرج ≥ 90) |
+| الضغط | ≤ 1000 hPa | ≤ 995 hPa |
+
+اعتُمد «عاصفة» بدل «إعصار» لأن الأعاصير المدارية لا تتشكل قرب الساحل السوري.
+
+**السيول:** رموز مطر غزير/عاصفة رعدية، في 9 محافظات ذات أودية فقط.
+
+**الفيضانات:** سد الرستن (حمص، حماة) بمقارنة التدفق بسعة المفيض، والفرات (الحسكة، الرقة، دير الزور) بمقارنة التدفق بمتوسط 30 يوماً، وبقية الأنهار بهطول مرتفع مع تدفق فوق المعتاد.
+
+**التهدئة:** لا يتكرر تنبيه الطقس نفسه لنفس المحافظة خلال 24 ساعة.
+
+الأرقام كلها في `config/earthquake.php` و`config/weather_alerts.php`.
+</details>
+
+<details>
+<summary><b>لوحة الإدارة</b></summary>
+
+على المسار `/admin`، تسجيل الدخول ببريد وكلمة مرور ثم رمز تطبيق مصادقة (إلزامي).
+- **مشرف:** إدارة المحافظات وأنواع الأخطار والتنبيهات والزلازل وفرق الإغاثة، والرد على البلاغات (يصل الرد بالبريد)، وحذف المستخدمين، وعرض طلبات الإغاثة وبلاغات الشعور بالهزة.
+- **مشرف أعلى:** كل ما سبق + **إرسال تنبيه يدوي** (لمحافظة أو لكل المحافظات، بشدة critical وصفارة، مع مربع تأكيد وبادئة توضح الفئة: محاكاة / كارثة لم يرصدها النظام / حدث وطني عام) + إدارة المشرفين + سجل النشاط.
+</details>
+
+<details>
+<summary><b>الأمان</b></summary>
+
+- كلمات المرور مجزّأة (bcrypt)، وسياسة 8–24 حرفاً إنجليزياً وأرقاماً
+- رمز التحقق OTP مجزّأ ولا يُكتب في السجلات
+- مفاتيح Sanctum تنتهي بعد 90 يوماً وتُلغى عند الخروج
+- 5 محاولات/دقيقة للدخول والتسجيل والرمز واستعادة كلمة المرور (ثم 429)
+- HTTPS وملفات تعريف ارتباط آمنة، ووضع التصحيح متوقف في الإنتاج
+- الأسرار في متغيرات البيئة فقط ولا تُرفع إلى المستودع
+</details>
+
+<details>
+<summary><b>البريد الإلكتروني</b></summary>
+
+Railway يحجب منافذ SMTP، فيرسل الخادم بريده (رمز التحقق، إشعار البلاغ، رد الإدارة) عبر طلب HTTPS إلى **Google Apps Script** الذي يرسله من Gmail (حد يومي ≈ 100 رسالة)، وبعد إعادة الرد للتطبيق حتى لا يتأخر.
+</details>
+
+<details>
+<summary><b>واجهة الـ API وهيكل المشروع</b></summary>
+
+32 مساراً للتطبيق تحت `/api/v1` (مصادقة، مدن، أنواع أخطار، زلازل، طقس، تنبيهات، بلاغات، إغاثة، هل شعرت بشيء، رموز الأجهزة). النصوص ثنائية اللغة (`ar`/`en`) ويرسل التطبيق `Accept-Language` لتصله رسائل الخطأ بلغته.
+
+```
+app/Services/        معالجة الزلازل والطقس، وإرسال التنبيهات وFCM، والبريد، وOTP
+app/Filament/        لوحة الإدارة
+app/Console/         أوامر Artisan (earthquake:listen, weather:fetch, ...)
+config/              قواعد التنبيه (earthquake.php, weather_alerts.php)
+docker/, Dockerfile  حاوية النشر
+docs/                دليل النشر
+```
+للتجربة محلياً: `php artisan earthquake:simulate 6.2 SY006` يحاكي زلزالاً بقوة 6.2 قرب حمص.
+</details>
+
+<details>
+<summary><b>النشر والحالة</b></summary>
+
+حاوية Docker واحدة على Railway تشغّل بإدارة Supervisor: Nginx+PHP-FPM، `earthquake:listen`، `schedule:work`، وبجانبها MySQL وقرص دائم للصور.
+
+**الحالة:** اختُبر على هاتف Android حقيقي (والتطبيق مفتوح/بالخلفية/الهاتف مقفل). لم تقع بعد عاصفة أو فيضان حقيقي على بيانات حية، فاختُبر منطقها بالمحاكاة. Android فقط (iOS خارج النطاق حالياً).
+</details>
+
+### ملاحظة
+قواعد تحديد المحافظات وشدة الخطر **قواعد استهداف مبسطة وليست نموذجاً علمياً دقيقاً**، والمشروع مرحلي.
+
+**مشروع مرحلي — جامعة الحواش الخاصة، كلية الهندسة، قسم المعلوماتية.**
+الطلاب: محمد رمضان مصطفى دعبول، عبد المجيد دبدوب — بإشراف د. محمد ديب.
+
+---
+
+## 🇬🇧 English
+
+An early warning system that detects **earthquakes, flash floods, river floods and storms** in Syria, works out **which governorates are affected**, and sends an instant alert to residents' phones, with an **alarm siren** for high severity and safety instructions in Arabic and English.
+
+This repository is the **backend server** and admin panel. The mobile app (Flutter) lives in a separate project.
+
+### How it works
+1. The server receives earthquakes in real time from **EMSC** (permanent WebSocket) and fetches weather and river discharge hourly from **Open-Meteo**.
+2. Simplified geographic and scientific rules decide which governorates are affected and how severe the risk is in each.
+3. One alert is created per governorate and delivered to its users through **Firebase Cloud Messaging**.
+
+### Key features
+- Instant alerts that work even when the app is closed, with a siren for high severity
+- Safety instructions before, during and after each hazard (Arabic / English)
+- "Did you feel it?", user reports, and relief requests
+- Email sign-up with OTP verification, or Google sign-in
+- Admin panel (Filament) with two roles, admin and super admin, plus 2FA and an activity log
+
+### Tech stack
+PHP 8.2 · Laravel 12 · Sanctum · Filament · MySQL (SQLite for development) · Firebase Cloud Messaging · Docker · Railway
+
+### Run locally
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
+php artisan earthquake:listen   # separate terminal: earthquake feed
+php artisan schedule:work       # separate terminal: hourly weather fetch
+```
+Requirements: PHP 8.2 with the `intl` extension. Push notifications need a Firebase service-account file (never committed). See `.env.example`.
+
+### Deployment
+The server runs on **Railway** inside a Docker container. Full guide: [docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md).
+
+### Details
+
+<details>
+<summary><b>App features (Flutter)</b></summary>
+
+- Home screen: latest earthquake, weather for every governorate, today's event counts (Damascus time), and an "active warning" banner
+- Alerts list with filtering by hazard type, and a history of past earthquakes
+- Safety instructions (before / during / after) for each hazard type
+- "Did you feel it?" using the Modified Mercalli scale (II–XII), user reports, and relief requests
+- **Offline mode**: instructions, weather and alerts are cached and shown when the connection drops
+- Arabic / English, dark / light theme, and notification and sound switches (applied on the server)
+</details>
+
+<details>
+<summary><b>Alert rules</b></summary>
+
+**Earthquakes:** an impact radius is estimated from the magnitude, then every governorate inside it is alerted, with severity dropping as distance from the epicenter grows (Haversine formula):
+
+| Magnitude | Radius |
+|---|---|
+| 2.0 – 3.0 | 30 km |
+| 3.0 – 4.0 | 60 km |
+| 4.0 – 5.0 | 120 km |
+| 5.0 – 6.0 | 220 km |
+| 6.0 – 7.0 | 350 km |
+| 7.0 and above | 500 km |
+
+The siren fires when magnitude ≥ 3.0 **and** severity is high/critical, which in practice means magnitude ≈ 5.5 or more at the nearest governorate.
+
+**Tsunami:** epicenter in the sea facing the coast + magnitude ≥ 6.0 + depth ≤ 100 km → alert for Tartus and Latakia, with siren.
+
+**Storms** (all three conditions must hold): wind + low pressure + rain ≥ 1 mm/h.
+
+| | Inland `severe_storm` | Coastal `coastal_storm` |
+|---|---|---|
+| Wind | ≥ 60 km/h (critical ≥ 80) | ≥ 65 km/h (critical ≥ 90) |
+| Pressure | ≤ 1000 hPa | ≤ 995 hPa |
+
+"Storm" is used instead of "hurricane" because tropical cyclones do not form near the Syrian coast.
+
+**Flash floods:** heavy-rain / thunderstorm weather codes, in the 9 governorates with valley terrain only.
+
+**River floods:** Rastan Dam (Homs, Hama) by comparing discharge with the spillway capacity; the Euphrates (Al-Hasakah, Raqqa, Deir ez-Zor) by comparing discharge with its own 30-day median; the remaining rivers by high accumulated rain plus above-normal discharge.
+
+**Cooldown:** the same weather alert is not repeated for the same governorate within 24 hours.
+
+All numbers live in `config/earthquake.php` and `config/weather_alerts.php`.
+</details>
+
+<details>
+<summary><b>Admin panel</b></summary>
+
+At `/admin`; sign-in with email and password, then an authenticator-app code (mandatory).
+- **Admin:** manage governorates, hazard types, alerts, earthquakes and relief teams; reply to reports (the reply is emailed to the user); delete users; view relief requests and "did you feel it" reports.
+- **Super admin:** everything above + **manual alert sending** (to one governorate or all, always critical with siren, with a confirmation dialog and a fixed prefix stating the category: test simulation / disaster the system missed / general national event) + admin management + activity log.
+</details>
+
+<details>
+<summary><b>Security</b></summary>
+
+- Passwords are hashed (bcrypt); policy: 8–24 English letters and digits
+- The OTP is hashed and never written to the logs
+- Sanctum tokens expire after 90 days and are revoked on logout
+- 5 attempts per minute for login, registration, OTP and password reset (then 429)
+- HTTPS and secure cookies; debug mode is off in production
+- Secrets live in environment variables only and are never committed
+</details>
+
+<details>
+<summary><b>Email</b></summary>
+
+Railway blocks SMTP ports, so the server sends its email (verification code, report notice, admin reply) through an HTTPS request to a **Google Apps Script** that sends it from Gmail (daily limit ≈ 100 messages), after the response has already been returned to the app so it never slows the API down.
+</details>
+
+<details>
+<summary><b>API and project structure</b></summary>
+
+32 mobile routes under `/api/v1` (auth, cities, hazard types, earthquakes, weather, alerts, reports, relief, "did you feel it", device tokens). Texts are bilingual (`ar`/`en`), and the app sends `Accept-Language` so error messages come back in its language.
+
+```
+app/Services/        earthquake and weather processing, alert dispatch and FCM, email, OTP
+app/Filament/        admin panel
+app/Console/         Artisan commands (earthquake:listen, weather:fetch, ...)
+config/              alert rules (earthquake.php, weather_alerts.php)
+docker/, Dockerfile  deployment container
+docs/                deployment guide
+```
+To try it locally: `php artisan earthquake:simulate 6.2 SY006` simulates a magnitude 6.2 earthquake near Homs.
+</details>
+
+<details>
+<summary><b>Deployment and status</b></summary>
+
+One Docker container on Railway runs, under Supervisor: Nginx + PHP-FPM, `earthquake:listen` and `schedule:work`, alongside a MySQL service and a persistent volume for images.
+
+**Status:** tested on a real Android phone (app open / in background / phone locked). No real storm or flood has occurred yet on live data, so their logic was tested by simulation. Android only (iOS is out of scope for now).
+</details>
+
+### Note
+The rules that pick affected governorates and severity are **simplified targeting heuristics, not an accurate scientific model**. This is a phased university project.
+
+**Phased project — Al-Hawash Private University, Faculty of Engineering, Informatics Department.**
+Students: Mohammad Ramadan Mustafa Dabool, Abdulmajeed Dabdoub — supervised by Dr. Mohammad Deeb.
