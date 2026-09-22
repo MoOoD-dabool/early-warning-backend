@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\AdminReliefTeamController;
 use App\Http\Controllers\Api\Admin\AdminReportController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\AlertController;
+use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\DeviceTokenController;
@@ -50,6 +51,7 @@ Route::prefix('v1')->group(function () {
     Route::get('earthquake-events/{earthquakeEvent}', [EarthquakeEventController::class, 'show']);
     Route::get('weather', [WeatherController::class, 'index']);
     Route::get('weather/forecast/{cityCode}', [WeatherController::class, 'forecast']);
+    Route::get('about', [AboutController::class, 'index']);
 
     // --- Authenticated mobile user (Sanctum) -----------------------------
     Route::middleware('auth:sanctum')->group(function () {
