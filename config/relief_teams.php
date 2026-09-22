@@ -24,12 +24,14 @@ return [
     |--------------------------------------------------------------------------
     | Statuses shown to mobile users
     |--------------------------------------------------------------------------
-    | Only a team that's actually doing something right now (active or on its
-    | way) is useful information for a citizen looking for help. 'completed'
-    | and 'inactive' are history the admin panel keeps, not something the
-    | mobile app's public /relief-teams endpoint should ever surface.
+    | 'active'/'en_route' are a team actually doing something right now.
+    | 'completed' is also shown — a citizen seeing "mission completed" is
+    | real, reassuring confirmation the system responded, not just noise.
+    | 'inactive' stays hidden: it's an internal admin/roster state (not yet
+    | dispatched, off duty, withdrawn) that doesn't tell a citizen anything
+    | useful and could misread as "no help available" during a real event.
     */
-    'user_visible_statuses' => ['active', 'en_route'],
+    'user_visible_statuses' => ['active', 'en_route', 'completed'],
 
     'types' => [
         'medical' => ['label_ar' => 'طبي', 'label_en' => 'Medical'],
