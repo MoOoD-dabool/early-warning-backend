@@ -82,7 +82,11 @@ class ListenEmscEarthquakes extends Command
                                     return;
                                 }
 
-                                $conn->send(new Frame(null, true, Frame::OP_PING));
+                                // An empty string (not null) — the library only
+                                // finishes initializing the frame (and marks it
+                                // ready to send) when a payload string is given;
+                                // null leaves it half-built and send() rejects it.
+                                $conn->send(new Frame('', true, Frame::OP_PING));
                             } catch (Throwable $e) {
                                 logger()->warning('[earthquake:listen] Watchdog check failed: '.$e->getMessage());
                             }
