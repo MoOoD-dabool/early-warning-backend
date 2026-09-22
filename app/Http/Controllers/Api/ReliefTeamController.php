@@ -14,8 +14,8 @@ class ReliefTeamController extends Controller
     public function index(): JsonResponse
     {
         $teams = ReliefTeam::query()
-            ->with('city')
-            ->where('is_active', true)
+            ->with(['city', 'disasterType'])
+            ->whereIn('status', config('relief_teams.user_visible_statuses'))
             ->orderBy('id')
             ->get();
 

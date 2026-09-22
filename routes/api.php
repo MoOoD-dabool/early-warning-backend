@@ -49,6 +49,7 @@ Route::prefix('v1')->group(function () {
     Route::get('earthquake-events', [EarthquakeEventController::class, 'index']);
     Route::get('earthquake-events/{earthquakeEvent}', [EarthquakeEventController::class, 'show']);
     Route::get('weather', [WeatherController::class, 'index']);
+    Route::get('weather/forecast/{cityCode}', [WeatherController::class, 'forecast']);
 
     // --- Authenticated mobile user (Sanctum) -----------------------------
     Route::middleware('auth:sanctum')->group(function () {

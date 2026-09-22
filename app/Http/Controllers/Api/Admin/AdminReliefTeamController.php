@@ -17,7 +17,7 @@ class AdminReliefTeamController extends Controller
     {
         return response()->json([
             'relief_teams' => ReliefTeamResource::collection(
-                ReliefTeam::query()->with('city')->orderBy('id')->get()
+                ReliefTeam::query()->with(['city', 'disasterType'])->orderBy('id')->get()
             ),
         ]);
     }
@@ -26,14 +26,14 @@ class AdminReliefTeamController extends Controller
     {
         $team = ReliefTeam::query()->create($request->validated());
 
-        return response()->json(['relief_team' => new ReliefTeamResource($team->load('city'))], 201);
+        return response()->json(['relief_team' => new ReliefTeamResource($team->load(['city', 'disasterType']))], 201);
     }
 
     public function update(UpdateReliefTeamRequest $request, ReliefTeam $reliefTeam): JsonResponse
     {
         $reliefTeam->update($request->validated());
 
-        return response()->json(['relief_team' => new ReliefTeamResource($reliefTeam->fresh('city'))]);
+        return response()->json(['relief_team' => new ReliefTeamResource($reliefTeam->fresh(['city', 'disasterType']))]);
     }
 
     public function destroy(ReliefTeam $reliefTeam): JsonResponse

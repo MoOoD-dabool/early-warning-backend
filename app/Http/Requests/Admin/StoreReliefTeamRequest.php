@@ -19,7 +19,10 @@ class StoreReliefTeamRequest extends FormRequest
             'city_id' => ['required', 'integer', 'exists:cities,id'],
             'street' => ['required', 'string', 'max:255'],
             'building_number' => ['required', 'string', 'max:255'],
-            'is_active' => ['sometimes', 'boolean'],
+            'status' => ['sometimes', 'string', 'in:'.implode(',', array_keys(config('relief_teams.statuses')))],
+            'relief_type' => ['nullable', 'string', 'in:'.implode(',', array_keys(config('relief_teams.types')))],
+            'disaster_type_id' => ['nullable', 'integer', 'exists:disaster_types,id'],
+            'deployed_at' => ['nullable', 'date'],
         ];
     }
 }

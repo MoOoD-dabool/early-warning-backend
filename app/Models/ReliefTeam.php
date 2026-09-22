@@ -20,13 +20,16 @@ class ReliefTeam extends Model
         'city_id',
         'street',
         'building_number',
-        'is_active',
+        'status',
+        'relief_type',
+        'disaster_type_id',
+        'deployed_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
+            'deployed_at' => 'datetime',
         ];
     }
 
@@ -41,5 +44,10 @@ class ReliefTeam extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function disasterType(): BelongsTo
+    {
+        return $this->belongsTo(DisasterType::class, 'disaster_type_id');
     }
 }

@@ -37,6 +37,8 @@ return [
 
     'weather' => [
         'no_data' => 'No weather data available for your city yet.',
+        'city_not_found' => 'This governorate could not be found.',
+        'forecast_unavailable' => 'Could not fetch the weather forecast right now, please try again later.',
     ],
 
     'reports' => [

@@ -106,4 +106,59 @@ class OpenMeteoWeatherService
             return null;
         }
     }
+
+    /**
+     * Day-by-day forecast (today + the next `$days - 1` days), used by the
+     * app's weather-detail screen. `timezone=auto` makes Open-Meteo resolve
+     * the city's own local timezone from its coordinates (Asia/Damascus for
+     * every Syrian governorate), so "today" lines up with the user's day
+     * instead of UTC's.
+     *
+     * @return array<int, array{date: string, temperature_max_c: float, temperature_min_c: float, humidity_percent: int, wind_speed_kmh: float, weather_code: int|null}>|null
+     */
+    public function fetchDailyForecast(float $latitude, float $longitude, int $days = 7): ?array
+    {
+        try {
+            $response = Http::timeout(10)->get(self::BASE_URL, [
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,relative_humidity_2m_mean',
+                'forecast_days' => $days,
+                'timezone' => 'auto',
+            ]);
+
+            if (! $response->successful()) {
+                Log::warning('OpenMeteo: forecast request failed.', ['status' => $response->status()]);
+
+                return null;
+            }
+
+            $daily = $response->json('daily');
+
+            if (! is_array($daily) || ! isset($daily['time'])) {
+                Log::warning('OpenMeteo: unexpected forecast response shape.', ['body' => $response->body()]);
+
+                return null;
+            }
+
+            $result = [];
+
+            foreach ($daily['time'] as $i => $date) {
+                $result[] = [
+                    'date' => $date,
+                    'temperature_max_c' => (float) ($daily['temperature_2m_max'][$i] ?? 0),
+                    'temperature_min_c' => (float) ($daily['temperature_2m_min'][$i] ?? 0),
+                    'humidity_percent' => (int) round($daily['relative_humidity_2m_mean'][$i] ?? 0),
+                    'wind_speed_kmh' => (float) ($daily['wind_speed_10m_max'][$i] ?? 0),
+                    'weather_code' => isset($daily['weather_code'][$i]) ? (int) $daily['weather_code'][$i] : null,
+                ];
+            }
+
+            return $result;
+        } catch (\Throwable $e) {
+            Log::error('OpenMeteo: exception while fetching forecast.', ['message' => $e->getMessage()]);
+
+            return null;
+        }
+    }
 }

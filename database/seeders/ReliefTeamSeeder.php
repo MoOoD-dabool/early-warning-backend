@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\City;
+use App\Models\DisasterType;
 use App\Models\ReliefTeam;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
@@ -12,10 +13,42 @@ use Illuminate\Support\Facades\Schema;
 class ReliefTeamSeeder extends Seeder
 {
     private const TEAMS = [
-        ['city_code' => 'SY012', 'street' => 'شارع النيل', 'building_number' => '42'],
-        ['city_code' => 'SY001', 'street' => 'شارع الثورة', 'building_number' => '17'],
-        ['city_code' => 'SY006', 'street' => 'شارع باب السباع', 'building_number' => '8'],
-        ['city_code' => 'SY010', 'street' => 'شارع الجمهورية', 'building_number' => '23'],
+        [
+            'city_code' => 'SY012', // Aleppo
+            'street' => 'شارع النيل',
+            'building_number' => '42',
+            'status' => 'active',
+            'relief_type' => 'search_rescue',
+            'disaster_type_key' => 'earthquake',
+            'deployed_hours_ago' => 6,
+        ],
+        [
+            'city_code' => 'SY001', // Damascus
+            'street' => 'شارع الثورة',
+            'building_number' => '17',
+            'status' => 'active',
+            'relief_type' => 'medical',
+            'disaster_type_key' => 'earthquake',
+            'deployed_hours_ago' => 30,
+        ],
+        [
+            'city_code' => 'SY006', // Homs — a Rastan-tier flood city
+            'street' => 'شارع باب السباع',
+            'building_number' => '8',
+            'status' => 'active',
+            'relief_type' => 'logistics',
+            'disaster_type_key' => 'flood',
+            'deployed_hours_ago' => 20,
+        ],
+        [
+            'city_code' => 'SY010', // Latakia — coastal
+            'street' => 'شارع الجمهورية',
+            'building_number' => '23',
+            'status' => 'active',
+            'relief_type' => 'food_water',
+            'disaster_type_key' => 'coastal_storm',
+            'deployed_hours_ago' => 48,
+        ],
     ];
 
     public function run(): void
@@ -31,13 +64,20 @@ class ReliefTeamSeeder extends Seeder
                 continue;
             }
 
+            $disasterTypeId = DisasterType::query()->where('key', $team['disaster_type_key'])->value('id');
+
             ReliefTeam::query()->updateOrCreate(
                 [
                     'city_id' => $cityId,
                     'street' => $team['street'],
                     'building_number' => $team['building_number'],
                 ],
-                ['is_active' => true],
+                [
+                    'status' => $team['status'],
+                    'relief_type' => $team['relief_type'],
+                    'disaster_type_id' => $disasterTypeId,
+                    'deployed_at' => now()->subHours($team['deployed_hours_ago']),
+                ],
             );
         }
     }

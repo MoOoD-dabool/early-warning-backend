@@ -5,7 +5,6 @@ namespace App\Filament\Resources\ReliefTeams\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -21,8 +20,26 @@ class ReliefTeamsTable
                     ->searchable(),
                 TextColumn::make('building_number')
                     ->searchable(),
-                IconColumn::make('is_active')
-                    ->boolean(),
+                TextColumn::make('status')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => config("relief_teams.statuses.{$state}.label_ar", $state))
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'en_route' => 'warning',
+                        'completed' => 'gray',
+                        'inactive' => 'danger',
+                        default => 'gray',
+                    }),
+                TextColumn::make('relief_type')
+                    ->formatStateUsing(fn (?string $state): string => $state === null
+                        ? '-'
+                        : config("relief_teams.types.{$state}.label_ar", $state)),
+                TextColumn::make('disasterType.name_ar')
+                    ->label('Disaster')
+                    ->placeholder('-'),
+                TextColumn::make('deployed_at')
+                    ->dateTime()
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
