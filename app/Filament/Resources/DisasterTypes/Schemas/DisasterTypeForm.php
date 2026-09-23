@@ -13,7 +13,12 @@ class DisasterTypeForm
         return $schema
             ->components([
                 TextInput::make('key')
-                    ->required(),
+                    ->required()
+                    ->unique(table: 'disaster_types', column: 'key', ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => 'هذا المفتاح مستخدم من قبل لنوع كارثة آخر.',
+                    ])
+                    ->helperText('معرّف برمجي ثابت، بالإنجليزية بدون مسافات (مثال: wildfire). المفاتيح السبعة الأساسية محجوزة: earthquake, flash_flood, flood, severe_storm, coastal_storm, tsunami, national_event.'),
                 TextInput::make('name_ar')
                     ->required(),
                 TextInput::make('name_en')
