@@ -25,7 +25,7 @@ class EarthquakeEventForm
                 TextInput::make('location_name')
                     ->required(),
                 Select::make('city_id')
-                    ->relationship('city', 'id'),
+                    ->relationship('city', 'name_ar'),
                 Toggle::make('processed')
                     ->required(),
                 DateTimePicker::make('occurred_at')

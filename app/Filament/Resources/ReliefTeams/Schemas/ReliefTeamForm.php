@@ -14,7 +14,7 @@ class ReliefTeamForm
         return $schema
             ->components([
                 Select::make('city_id')
-                    ->relationship('city', 'id')
+                    ->relationship('city', 'name_ar')
                     ->required(),
                 TextInput::make('street')
                     ->required(),

@@ -153,20 +153,6 @@ class SimulateDisaster extends Page
                             ->default(0)
                             ->required(fn ($get) => $get('mode') === 'weather')
                             ->helperText('العواصف تحتاج رياح + ضغط منخفض + هطول معاً (نفس شرط النظام الحقيقي).'),
-                        TextInput::make('temperature_c')
-                            ->label('الحرارة (°م) — تُسجَّل فقط، لا تدخل في شرط أي تنبيه')
-                            ->numeric()
-                            ->minValue(-50)
-                            ->maxValue(60)
-                            ->default(20)
-                            ->required(fn ($get) => $get('mode') === 'weather'),
-                        TextInput::make('humidity_percent')
-                            ->label('الرطوبة (%) — تُسجَّل فقط، لا تدخل في شرط أي تنبيه')
-                            ->numeric()
-                            ->minValue(0)
-                            ->maxValue(100)
-                            ->default(50)
-                            ->required(fn ($get) => $get('mode') === 'weather'),
                     ]),
             ])
             ->statePath('data');
@@ -207,10 +193,13 @@ class SimulateDisaster extends Page
 
                     app(EmscEarthquakeProcessor::class)->handle($properties);
                 } else {
-                    $reading = WeatherReading::query()->create([
+                    // Built in memory only, never saved: the app shows each
+                    // city's latest saved reading as its current weather, so a
+                    // saved simulated reading would show fake weather to real
+                    // users until the next hourly fetch. The alert checks only
+                    // need these values and the city, not a database row.
+                    $reading = new WeatherReading([
                         'city_id' => $city->id,
-                        'temperature_c' => (float) $data['temperature_c'],
-                        'humidity_percent' => (int) $data['humidity_percent'],
                         'wind_speed_kmh' => (float) $data['wind_speed_kmh'],
                         'pressure_msl' => (float) $data['pressure_msl'],
                         'precipitation_mm' => (float) $data['precipitation_mm'],
