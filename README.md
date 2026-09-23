@@ -46,10 +46,12 @@ php artisan schedule:work       # نافذة منفصلة: جلب الطقس ك�
 <details>
 <summary><b>ميزات التطبيق (Flutter)</b></summary>
 
-- صفحة رئيسية: آخر زلزال، طقس المحافظات، أرقام أحداث اليوم بتوقيت دمشق، ولافتة «التحذير الفعال»
+- صفحة رئيسية تفاعلية: آخر زلزال، طقس المحافظات (محافظة المستخدم أولاً)، أرقام أحداث اليوم بتوقيت دمشق، ولافتة «التحذير الفعال»؛ والضغط على أي عنصر يفتح تفاصيله
+- توقعات الطقس لسبعة أيام لأي محافظة
 - قائمة تنبيهات مع تصفية حسب نوع الخطر، وسجل الزلازل السابقة
 - إرشادات السلامة (قبل/أثناء/بعد) لكل نوع خطر
-- «هل شعرت بشيء؟» بمقياس ميركالي (II–XII)، والبلاغات، وطلب الإغاثة
+- «هل شعرت بشيء؟» بمقياس ميركالي (II–XII)، والبلاغات مع متابعة حالتها، وطلب الإغاثة وعرض فرق الإغاثة وحالتها ونوعها
+- محاكي خطر تدريبي: صفارة وتنبيه وإرشادات لنوع كارثة يختاره المستخدم، دون إرسال أي بيانات
 - العمل **بدون اتصال**: يحفظ الإرشادات والطقس والتنبيهات ويعرضها عند انقطاع الإنترنت
 - عربي/إنجليزي، ووضع ليلي/نهاري، ومفتاحا الإشعارات والصوت (يُطبَّقان على الخادم)
 </details>
@@ -67,6 +69,8 @@ php artisan schedule:work       # نافذة منفصلة: جلب الطقس ك�
 | 5.0 – 6.0 | 220 كم |
 | 6.0 – 7.0 | 350 كم |
 | 7.0 فأكثر | 500 كم |
+
+ويُقلَّل نصف القطر حتى النصف للزلازل الأعمق من 100 كم.
 
 الصفارة تعمل عند قوة ≥ 3.0 **وشدة high/critical معاً**، أي عملياً من قوة ≈ 5.5 عند أقرب محافظة.
 
@@ -94,8 +98,9 @@ php artisan schedule:work       # نافذة منفصلة: جلب الطقس ك�
 <summary><b>لوحة الإدارة</b></summary>
 
 على المسار `/admin`، تسجيل الدخول ببريد وكلمة مرور ثم رمز تطبيق مصادقة (إلزامي).
-- **مشرف:** إدارة المحافظات وأنواع الأخطار والتنبيهات والزلازل وفرق الإغاثة، والرد على البلاغات (يصل الرد بالبريد)، وحذف المستخدمين، وعرض طلبات الإغاثة وبلاغات الشعور بالهزة.
-- **مشرف أعلى:** كل ما سبق + **إرسال تنبيه يدوي** (لمحافظة أو لكل المحافظات، بشدة critical وصفارة، مع مربع تأكيد وبادئة توضح الفئة: محاكاة / كارثة لم يرصدها النظام / حدث وطني عام) + إدارة المشرفين + سجل النشاط.
+- **مشرف:** إضافة وتعديل المحافظات وأنواع الأخطار، وعرض وتعديل التنبيهات والزلازل (لا تُنشأ يدوياً لأنها لا تمر بخدمة الإرسال)، وإدارة فرق الإغاثة وحالتها، والرد على البلاغات (يصل الرد بالبريد)، وحذف المستخدمين، وعرض طلبات الإغاثة وبلاغات الشعور بالهزة وسجلات الطقس والأجهزة ووصول التنبيهات.
+- **مشرف أعلى:** كل ما سبق + **إرسال تنبيه يدوي** (لمحافظة أو لكل المحافظات، بشدة critical وصفارة، مع مربع تأكيد وبادئة توضح الفئة: محاكاة / كارثة لم يرصدها النظام / حدث وطني عام) + **محاكاة كارثة واقعية** (قيم فيزيائية تمر بشروط الإنذار الحقيقية نفسها) + إدارة المشرفين + سجل النشاط.
+- المحافظات الـ16 وأنواع الأخطار الـ7 الأصلية محمية من الحذف؛ وما يُضاف لاحقاً يحذفه المشرف الأعلى فقط بعد كتابة اسمه للتأكيد.
 </details>
 
 <details>
@@ -118,7 +123,7 @@ Railway يحجب منافذ SMTP، فيرسل الخادم بريده (رمز ا
 <details>
 <summary><b>واجهة الـ API وهيكل المشروع</b></summary>
 
-32 مساراً للتطبيق تحت `/api/v1` (مصادقة، مدن، أنواع أخطار، زلازل، طقس، تنبيهات، بلاغات، إغاثة، هل شعرت بشيء، رموز الأجهزة). النصوص ثنائية اللغة (`ar`/`en`) ويرسل التطبيق `Accept-Language` لتصله رسائل الخطأ بلغته.
+34 مساراً للتطبيق تحت `/api/v1` (مصادقة، مدن، أنواع أخطار، زلازل، طقس وتوقعات أسبوعية، من نحن، تنبيهات، بلاغات، إغاثة، هل شعرت بشيء، رموز الأجهزة). النصوص ثنائية اللغة (`ar`/`en`) ويرسل التطبيق `Accept-Language` لتصله رسائل الخطأ بلغته.
 
 ```
 app/Services/        معالجة الزلازل والطقس، وإرسال التنبيهات وFCM، والبريد، وOTP
@@ -134,7 +139,7 @@ docs/                دليل النشر
 <details>
 <summary><b>النشر والحالة</b></summary>
 
-حاوية Docker واحدة على Railway تشغّل بإدارة Supervisor: Nginx+PHP-FPM، `earthquake:listen`، `schedule:work`، وبجانبها MySQL وقرص دائم للصور.
+حاوية Docker واحدة على Railway تشغّل بإدارة Supervisor: Nginx+PHP-FPM، `earthquake:listen`، `schedule:work`، وبجانبها MySQL وقرص دائم للصور. ويرسل `earthquake:listen` إشارة فحص كل 60 ثانية ويعيد الاتصال تلقائياً إذا صمت الاتصال أكثر من 180 ثانية.
 
 **الحالة:** اختُبر على هاتف Android حقيقي (والتطبيق مفتوح/بالخلفية/الهاتف مقفل). لم تقع بعد عاصفة أو فيضان حقيقي على بيانات حية، فاختُبر منطقها بالمحاكاة. Android فقط (iOS خارج النطاق حالياً).
 </details>
@@ -188,10 +193,12 @@ The server runs on **Railway** inside a Docker container. Full guide: [docs/DEPL
 <details>
 <summary><b>App features (Flutter)</b></summary>
 
-- Home screen: latest earthquake, weather for every governorate, today's event counts (Damascus time), and an "active warning" banner
+- Interactive home screen: latest earthquake, weather for every governorate (the user's own first), today's event counts (Damascus time), and an "active warning" banner; tapping any item opens its details
+- 7-day weather forecast for any governorate
 - Alerts list with filtering by hazard type, and a history of past earthquakes
 - Safety instructions (before / during / after) for each hazard type
-- "Did you feel it?" using the Modified Mercalli scale (II–XII), user reports, and relief requests
+- "Did you feel it?" using the Modified Mercalli scale (II–XII), user reports with status tracking, relief requests, and relief teams with their status and type
+- Training danger simulator: siren, alert and safety instructions for a hazard type the user picks, with no data sent anywhere
 - **Offline mode**: instructions, weather and alerts are cached and shown when the connection drops
 - Arabic / English, dark / light theme, and notification and sound switches (applied on the server)
 </details>
@@ -209,6 +216,8 @@ The server runs on **Railway** inside a Docker container. Full guide: [docs/DEPL
 | 5.0 – 6.0 | 220 km |
 | 6.0 – 7.0 | 350 km |
 | 7.0 and above | 500 km |
+
+The radius is reduced by up to half for quakes deeper than 100 km.
 
 The siren fires when magnitude ≥ 3.0 **and** severity is high/critical, which in practice means magnitude ≈ 5.5 or more at the nearest governorate.
 
@@ -236,8 +245,9 @@ All numbers live in `config/earthquake.php` and `config/weather_alerts.php`.
 <summary><b>Admin panel</b></summary>
 
 At `/admin`; sign-in with email and password, then an authenticator-app code (mandatory).
-- **Admin:** manage governorates, hazard types, alerts, earthquakes and relief teams; reply to reports (the reply is emailed to the user); delete users; view relief requests and "did you feel it" reports.
-- **Super admin:** everything above + **manual alert sending** (to one governorate or all, always critical with siren, with a confirmation dialog and a fixed prefix stating the category: test simulation / disaster the system missed / general national event) + admin management + activity log.
+- **Admin:** add and edit governorates and hazard types; view and edit alerts and earthquakes (they cannot be created by hand, because that would bypass the dispatch service); manage relief teams and their status; reply to reports (the reply is emailed to the user); delete users; view relief requests, "did you feel it" reports, weather readings, device tokens and alert deliveries.
+- **Super admin:** everything above + **manual alert sending** (to one governorate or all, always critical with siren, with a confirmation dialog and a fixed prefix stating the category: test simulation / disaster the system missed / general national event) + **realistic disaster simulation** (physical values that go through the same real alert rules) + admin management + activity log.
+- The original 16 governorates and 7 hazard types cannot be deleted; anything added later can only be deleted by a super admin after typing its name to confirm.
 </details>
 
 <details>
@@ -260,7 +270,7 @@ Railway blocks SMTP ports, so the server sends its email (verification code, rep
 <details>
 <summary><b>API and project structure</b></summary>
 
-32 mobile routes under `/api/v1` (auth, cities, hazard types, earthquakes, weather, alerts, reports, relief, "did you feel it", device tokens). Texts are bilingual (`ar`/`en`), and the app sends `Accept-Language` so error messages come back in its language.
+34 mobile routes under `/api/v1` (auth, cities, hazard types, earthquakes, weather and weekly forecast, about, alerts, reports, relief, "did you feel it", device tokens). Texts are bilingual (`ar`/`en`), and the app sends `Accept-Language` so error messages come back in its language.
 
 ```
 app/Services/        earthquake and weather processing, alert dispatch and FCM, email, OTP
@@ -276,7 +286,7 @@ To try it locally: `php artisan earthquake:simulate 6.2 SY006` simulates a magni
 <details>
 <summary><b>Deployment and status</b></summary>
 
-One Docker container on Railway runs, under Supervisor: Nginx + PHP-FPM, `earthquake:listen` and `schedule:work`, alongside a MySQL service and a persistent volume for images.
+One Docker container on Railway runs, under Supervisor: Nginx + PHP-FPM, `earthquake:listen` and `schedule:work`, alongside a MySQL service and a persistent volume for images. `earthquake:listen` pings every 60 s and reconnects automatically if the connection goes silent for over 180 s.
 
 **Status:** tested on a real Android phone (app open / in background / phone locked). No real storm or flood has occurred yet on live data, so their logic was tested by simulation. Android only (iOS is out of scope for now).
 </details>
