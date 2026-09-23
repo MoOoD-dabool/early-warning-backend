@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Alerts;
 
-use App\Filament\Resources\Alerts\Pages\CreateAlert;
 use App\Filament\Resources\Alerts\Pages\EditAlert;
 use App\Filament\Resources\Alerts\Pages\ListAlerts;
 use App\Filament\Resources\Alerts\Schemas\AlertForm;
@@ -41,8 +40,17 @@ class AlertResource extends Resource
     {
         return [
             'index' => ListAlerts::route('/'),
-            'create' => CreateAlert::route('/create'),
             'edit' => EditAlert::route('/{record}/edit'),
         ];
+    }
+
+    // A hand-typed row here skips AlertDispatchService entirely (no push,
+    // no user_alerts rows) while still showing "created successfully" -
+    // a real, misleading trap. Real alerts always go through Send Alert or
+    // the disaster simulator, which dispatch properly; there's no
+    // legitimate reason left to create one here by hand.
+    public static function canCreate(): bool
+    {
+        return false;
     }
 }

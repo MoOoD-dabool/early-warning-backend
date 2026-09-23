@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\EarthquakeEvents;
 
-use App\Filament\Resources\EarthquakeEvents\Pages\CreateEarthquakeEvent;
 use App\Filament\Resources\EarthquakeEvents\Pages\EditEarthquakeEvent;
 use App\Filament\Resources\EarthquakeEvents\Pages\ListEarthquakeEvents;
 use App\Filament\Resources\EarthquakeEvents\Schemas\EarthquakeEventForm;
@@ -41,8 +40,18 @@ class EarthquakeEventResource extends Resource
     {
         return [
             'index' => ListEarthquakeEvents::route('/'),
-            'create' => CreateEarthquakeEvent::route('/create'),
             'edit' => EditEarthquakeEvent::route('/{record}/edit'),
         ];
+    }
+
+    // A hand-typed row here skips EmscEarthquakeProcessor entirely (no
+    // affected-cities calc, no alerts, no push) while still showing
+    // "created successfully" - a real, misleading trap. Any real record
+    // (live or simulated) always goes through the real pipeline (the
+    // listener, or the disaster simulator using real EMSC values), which
+    // is more accurate than hand-typed values anyway.
+    public static function canCreate(): bool
+    {
+        return false;
     }
 }
